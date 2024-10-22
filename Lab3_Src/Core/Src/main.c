@@ -22,7 +22,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "Lab3_Process.h"
+//#include "timer.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -56,7 +57,22 @@ static void MX_TIM2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+uint8_t Sec_counter;
+uint8_t Sec_flag = 0;
+uint8_t TIMER_CYCLE = 10;
 
+void setTimerSec(int duration){
+	Sec_counter = duration / TIMER_CYCLE;
+	Sec_flag = 0;
+}
+
+void timer_run(){
+	if (Sec_counter > 0){
+		Sec_counter--;
+		if (Sec_counter == 0)
+			Sec_flag = 1;
+	}
+}
 /* USER CODE END 0 */
 
 /**
@@ -89,13 +105,20 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-
+  HAL_TIM_Base_Start_IT (& htim2 );
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  Lab3_Init();
+  setTimerSec(0);
   while (1)
   {
+	  if (Sec_flag) {
+		  HAL_GPIO_TogglePin(LED_DEBUG_GPIO_Port, LED_DEBUG_Pin);
+		  //Mode_1();
+		  setTimerSec(1000);
+	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -157,9 +180,9 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 7;
+  htim2.Init.Prescaler = 7999;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 9999;
+  htim2.Init.Period = 9;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
@@ -203,9 +226,9 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, SEG1_0_Pin|SEG1_1_Pin|SEG1_2_Pin|SEG2_3_Pin
-                          |SEG2_4_Pin|SEG2_5_Pin|SEG2_6_Pin|SEG1_3_Pin
-                          |SEG1_4_Pin|SEG1_5_Pin|SEG1_6_Pin|SEG2_0_Pin
-                          |SEG2_1_Pin|SEG2_2_Pin, GPIO_PIN_RESET);
+                          |SEG2_4_Pin|SEG2_5_Pin|SEG2_6_Pin|LED_DEBUG_Pin
+                          |SEG1_3_Pin|SEG1_4_Pin|SEG1_5_Pin|SEG1_6_Pin
+                          |SEG2_0_Pin|SEG2_1_Pin|SEG2_2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : RED_0_Pin YELLOW_0_Pin GREEN_0_Pin RED_1_Pin
                            YELLOW_1_Pin GREEN_1_Pin EN1_1_Pin EN1_2_Pin
@@ -219,13 +242,13 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pins : SEG1_0_Pin SEG1_1_Pin SEG1_2_Pin SEG2_3_Pin
-                           SEG2_4_Pin SEG2_5_Pin SEG2_6_Pin SEG1_3_Pin
-                           SEG1_4_Pin SEG1_5_Pin SEG1_6_Pin SEG2_0_Pin
-                           SEG2_1_Pin SEG2_2_Pin */
+                           SEG2_4_Pin SEG2_5_Pin SEG2_6_Pin LED_DEBUG_Pin
+                           SEG1_3_Pin SEG1_4_Pin SEG1_5_Pin SEG1_6_Pin
+                           SEG2_0_Pin SEG2_1_Pin SEG2_2_Pin */
   GPIO_InitStruct.Pin = SEG1_0_Pin|SEG1_1_Pin|SEG1_2_Pin|SEG2_3_Pin
-                          |SEG2_4_Pin|SEG2_5_Pin|SEG2_6_Pin|SEG1_3_Pin
-                          |SEG1_4_Pin|SEG1_5_Pin|SEG1_6_Pin|SEG2_0_Pin
-                          |SEG2_1_Pin|SEG2_2_Pin;
+                          |SEG2_4_Pin|SEG2_5_Pin|SEG2_6_Pin|LED_DEBUG_Pin
+                          |SEG1_3_Pin|SEG1_4_Pin|SEG1_5_Pin|SEG1_6_Pin
+                          |SEG2_0_Pin|SEG2_1_Pin|SEG2_2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -234,13 +257,16 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pins : BUTTON_0_Pin BUTTON_1_Pin BUTTON_2_Pin */
   GPIO_InitStruct.Pin = BUTTON_0_Pin|BUTTON_1_Pin|BUTTON_2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 }
 
 /* USER CODE BEGIN 4 */
-
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	timer_run();
+}
 /* USER CODE END 4 */
 
 /**

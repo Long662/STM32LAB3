@@ -1,0 +1,5 @@
+Lab3_Process.c:15:6:Lab3_Init	56	static
+Lab3_Process.c:53:6:Update_Display	16	static
+Lab3_Process.c:62:6:Enable_led7seg	16	static
+Lab3_Process.c:77:6:Scan_Display	16	static
+Lab3_Process.c:96:6:Mode_1	8	static
